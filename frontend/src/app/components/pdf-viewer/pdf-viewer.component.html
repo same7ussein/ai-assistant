@@ -1,0 +1,1413 @@
+@if (doc(); as d) {
+  <div class="max-w-[1100px] mx-auto px-4 sm:px-10 py-7 pb-[60px]">
+    <a
+      routerLink="/documents"
+      class="inline-flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 no-underline mb-4 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+    >
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+      </svg>
+      {{ 'pdfViewer.back' | transloco }}
+    </a>
+
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">{{ d.title }}</h1>
+
+    <div
+      class="flex border-b border-gray-200 dark:border-gray-700 mb-7 overflow-x-auto overflow-y-hidden"
+    >
+      @for (tab of tabs; track tab.id) {
+        <button
+          (click)="setTab(tab.id)"
+          class="px-5 py-3 text-sm font-medium bg-transparent border-none border-b-2 border-transparent cursor-pointer transition-colors mb-[-1px]"
+          [class.text-emerald-500]="activeTab() === tab.id"
+          [class.border-b-emerald-500]="activeTab() === tab.id"
+          [class.text-gray-500]="activeTab() !== tab.id"
+          [class.dark:text-gray-400]="activeTab() !== tab.id"
+          [class.hover:text-gray-600]="activeTab() !== tab.id"
+        >
+          {{ tab.label }}
+        </button>
+      }
+    </div>
+
+    @if (activeTab() === 'content') {
+      <div class="border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+        <!-- Header bar -->
+        <div
+          class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-5 py-3"
+        >
+          <span class="text-xs font-medium text-gray-600 dark:text-gray-400">{{
+            'pdfViewer.viewer' | transloco
+          }}</span>
+          <button
+            (click)="openInNewTab(d)"
+            class="inline-flex items-center gap-1.5 text-xs text-emerald-500 bg-transparent border-none cursor-pointer font-medium hover:text-emerald-600 transition-colors p-0"
+          >
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+              />
+            </svg>
+            {{ 'pdfViewer.openNewTab' | transloco }}
+          </button>
+        </div>
+
+        <!-- PDF viewer (new uploads with PDF file) -->
+        @if (getDocumentUrl(d); as docUrl) {
+          <ngx-doc-viewer
+            [url]="docUrl"
+            [viewer]="viewerMode()"
+            style="width: 100%; height: calc(100vh - 300px); min-height: 600px"
+          >
+          </ngx-doc-viewer>
+        } @else {
+          <!-- Text fallback for old documents without a saved file -->
+          <div
+            class="bg-gray-700 p-4 sm:p-7 overflow-y-auto"
+            style="max-height: calc(100vh - 360px)"
+          >
+            <div
+              class="bg-white max-w-[760px] mx-auto p-6 sm:p-14 min-h-[600px] shadow-xl rounded-sm"
+            >
+              <p class="font-serif text-sm text-gray-900 whitespace-pre-wrap leading-relaxed m-0">
+                {{ d.content }}
+              </p>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    @if (activeTab() === 'chat') {
+      <div
+        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl flex flex-col h-[calc(100vh-320px)] min-h-[400px]"
+      >
+        <div class="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
+          @for (msg of messages(); track $index) {
+            @if (msg.role === 'user') {
+              <div class="flex items-start justify-end gap-2.5">
+                <div
+                  class="bg-emerald-500 text-white px-4 py-3 rounded-[20px_20px_4px_20px] text-sm leading-relaxed max-w-[60%] whitespace-pre-wrap"
+                >
+                  {{ msg.content }}
+                </div>
+                <div
+                  class="w-[34px] h-[34px] bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                >
+                  {{ userInitial() }}
+                </div>
+              </div>
+            } @else {
+              <div class="flex items-start gap-3">
+                <div
+                  class="w-[38px] h-[38px] bg-emerald-500 rounded-full flex items-center justify-center text-white flex-shrink-0"
+                >
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-[4px_20px_20px_20px] px-4 py-3 text-sm leading-relaxed text-gray-700 dark:text-gray-200 max-w-[70%] whitespace-pre-wrap"
+                >
+                  {{ msg.content }}
+                </div>
+              </div>
+            }
+          }
+          @if (loading()) {
+            <div class="flex items-start gap-3">
+              <div
+                class="w-[38px] h-[38px] bg-emerald-500 rounded-full flex items-center justify-center text-white flex-shrink-0"
+              >
+                <svg class="animate-spin" fill="none" viewBox="0 0 24 24" width="16" height="16">
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    stroke-width="3"
+                    style="opacity: 0.3"
+                  ></circle>
+                  <path
+                    fill="currentColor"
+                    style="opacity: 0.8"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  ></path>
+                </svg>
+              </div>
+              <div
+                class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-[4px_20px_20px_20px] px-4 py-3 flex items-center gap-1.5 min-w-[60px]"
+              >
+                <span
+                  class="w-[7px] h-[7px] bg-emerald-500 rounded-full animate-bounce"
+                  style="animation-delay: 0s"
+                ></span>
+                <span
+                  class="w-[7px] h-[7px] bg-emerald-500 rounded-full animate-bounce"
+                  style="animation-delay: 0.2s"
+                ></span>
+                <span
+                  class="w-[7px] h-[7px] bg-emerald-500 rounded-full animate-bounce"
+                  style="animation-delay: 0.4s"
+                ></span>
+              </div>
+            </div>
+          }
+        </div>
+        <div class="flex border-t border-gray-100 dark:border-gray-700 p-3 gap-2">
+          <input
+            type="text"
+            [(ngModel)]="question"
+            [placeholder]="'pdfViewer.chatInitial' | transloco"
+            (keyup.enter)="ask()"
+            [disabled]="loading()"
+            class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 outline-none focus:border-emerald-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500"
+          />
+          <button
+            (click)="ask()"
+            [disabled]="loading() || !question.trim()"
+            class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+          >
+            <mat-icon>send</mat-icon>
+          </button>
+        </div>
+      </div>
+    }
+
+    @if (activeTab() === 'ai-actions') {
+      <div class="flex items-center gap-4 mb-7">
+        <div
+          class="w-14 h-14 bg-gradient-to-br from-emerald-300 to-emerald-500 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-lg"
+          style="box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25)"
+        >
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="26" height="26">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.8"
+              d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"
+            />
+          </svg>
+        </div>
+        <div>
+          <p class="text-lg font-bold text-gray-900 dark:text-gray-100 m-0">
+            {{ 'pdfViewer.aiAssistant' | transloco }}
+          </p>
+          <p class="text-xs text-gray-400 dark:text-gray-500 m-0">
+            {{ 'pdfViewer.aiSubtitle' | transloco }}
+          </p>
+        </div>
+      </div>
+
+      <div
+        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-6"
+      >
+        <div class="flex items-start gap-4 flex-1">
+          <div
+            class="w-[42px] h-[42px] bg-blue-50 text-blue-400 rounded-xl flex items-center justify-center flex-shrink-0"
+          >
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
+              />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 m-0 mb-1">
+              {{ 'pdfViewer.summarizeTitle' | transloco }}
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 m-0">
+              {{ 'pdfViewer.summarizeDesc' | transloco }}
+            </p>
+          </div>
+        </div>
+        <button
+          (click)="summarize()"
+          [disabled]="summarizing()"
+          class="inline-flex items-center gap-2 px-7 py-2.5 bg-emerald-500 text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+        >
+          @if (summarizing()) {
+            <svg class="animate-spin" fill="none" viewBox="0 0 24 24" width="16" height="16">
+              <circle
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+                style="opacity: 0.25"
+              ></circle>
+              <path
+                fill="currentColor"
+                style="opacity: 0.75"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            {{ 'pdfViewer.loading' | transloco }}
+          } @else {
+            {{ 'pdfViewer.summarizeBtn' | transloco }}
+          }
+        </button>
+      </div>
+
+      <div
+        class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-6 mb-3 flex flex-col"
+      >
+        <div class="flex items-start gap-4 mb-4">
+          <div
+            class="w-[42px] h-[42px] bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center flex-shrink-0"
+          >
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.5A3.001 3.001 0 0012 15a3 3 0 00-2.91 2.243l-.347-.5a5 5 0 010-6.487z"
+              />
+            </svg>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 m-0 mb-1">
+              {{ 'pdfViewer.explainTitle' | transloco }}
+            </p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 m-0">
+              {{ 'pdfViewer.explainDesc' | transloco }}
+            </p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <input
+            type="text"
+            [(ngModel)]="concept"
+            [placeholder]="'pdfViewer.explainPlaceholder' | transloco"
+            (keyup.enter)="explain()"
+            class="flex-1 px-4 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-700 outline-none focus:border-emerald-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500"
+          />
+          <button
+            (click)="explain()"
+            [disabled]="explaining() || !concept.trim()"
+            class="inline-flex items-center gap-2 px-7 py-2.5 bg-emerald-500 text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex-shrink-0"
+          >
+            @if (explaining()) {
+              <svg class="animate-spin" fill="none" viewBox="0 0 24 24" width="16" height="16">
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  stroke-width="4"
+                  style="opacity: 0.25"
+                ></circle>
+                <path
+                  fill="currentColor"
+                  style="opacity: 0.75"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              {{ 'pdfViewer.loading' | transloco }}
+            } @else {
+              {{ 'pdfViewer.explainBtn' | transloco }}
+            }
+          </button>
+        </div>
+      </div>
+    }
+    @if (activeTab() === 'flashcards') {
+      <!-- ── STUDY VIEW (card details) ── -->
+      @if (studyOpen()) {
+        <!-- Progress bar spanning full tab width -->
+        <div class="w-full h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mb-8">
+          <div
+            class="h-full bg-emerald-500 rounded-full transition-all duration-300"
+            [style.width.%]="
+              studyCards().length > 0 ? (studySeen().size / studyCards().length) * 100 : 0
+            "
+          ></div>
+        </div>
+
+        <!-- Back link -->
+        <button
+          (click)="closeStudy()"
+          class="inline-flex items-center gap-1.5 text-sm text-gray-500 dark:text-gray-400 bg-transparent border-none cursor-pointer mb-8 hover:text-gray-700 dark:hover:text-gray-200 transition-colors p-0"
+        >
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          {{ 'pdfViewer.flashcardSets' | transloco }}
+        </button>
+
+        <!-- Card with 3D flip -->
+        <div class="max-w-[760px] mx-auto [perspective:1000px]">
+          <div
+            class="relative transition-all duration-500 [transform-style:preserve-3d] min-h-[320px] cursor-pointer select-none"
+            [style.transform]="studyFlipped() ? 'rotateY(180deg)' : 'rotateY(0deg)'"
+            (click)="flipCard()"
+          >
+            <!-- ── FRONT FACE (question) ── -->
+            <div
+              class="absolute inset-0 [backface-visibility:hidden] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm flex flex-col p-8"
+            >
+              <!-- Card header: badge + star -->
+              <div class="flex items-start justify-between mb-6">
+                <span
+                  class="border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 text-xs font-semibold px-3 py-1 rounded-lg tracking-wide"
+                >
+                  {{ 'pdfViewer.card' | transloco }} {{ studyIndex() + 1 }}
+                </span>
+                <button
+                  (click)="$event.stopPropagation()"
+                  class="text-gray-300 dark:text-gray-600 hover:text-amber-400 dark:hover:text-amber-400 bg-transparent border-none cursor-pointer p-1 transition-colors"
+                >
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="22" height="22">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.8"
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Question -->
+              <div class="flex-1 flex items-center justify-center text-center px-4 py-6">
+                <p
+                  class="text-xl font-semibold text-gray-900 dark:text-gray-100 leading-relaxed m-0"
+                >
+                  {{ studyCards()[studyIndex()]?.question }}
+                </p>
+              </div>
+
+              <!-- Reveal button -->
+              <div
+                class="flex justify-center mt-6 pt-6 border-t border-gray-100 dark:border-gray-700"
+              >
+                <button
+                  (click)="$event.stopPropagation(); flipCard()"
+                  class="inline-flex items-center gap-2 text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 bg-transparent border-none cursor-pointer transition-colors"
+                >
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  {{ 'pdfViewer.clickReveal' | transloco }}
+                </button>
+              </div>
+            </div>
+
+            <!-- ── BACK FACE (answer) ── -->
+            <div
+              class="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-700 rounded-2xl shadow-sm flex flex-col p-8"
+            >
+              <!-- Card header: badge + star -->
+              <div class="flex items-start justify-between mb-6">
+                <span
+                  class="border border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 text-xs font-semibold px-3 py-1 rounded-lg tracking-wide"
+                >
+                  {{ 'pdfViewer.card' | transloco }} {{ studyIndex() + 1 }}
+                </span>
+                <button
+                  (click)="$event.stopPropagation()"
+                  class="text-gray-300 dark:text-gray-600 hover:text-amber-400 bg-transparent border-none cursor-pointer p-1 transition-colors"
+                >
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="22" height="22">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.8"
+                      d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Answer -->
+              <div class="flex-1 flex items-center justify-center text-center px-4 py-6">
+                <p
+                  class="text-xl font-semibold text-emerald-600 dark:text-emerald-400 leading-relaxed m-0"
+                >
+                  {{ studyCards()[studyIndex()]?.answer }}
+                </p>
+              </div>
+
+              <!-- Hide button -->
+              <div
+                class="flex justify-center mt-6 pt-6 border-t border-gray-100 dark:border-gray-700"
+              >
+                <button
+                  (click)="$event.stopPropagation(); flipCard()"
+                  class="inline-flex items-center gap-2 text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 bg-transparent border-none cursor-pointer transition-colors"
+                >
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="15" height="15">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
+                  {{ 'pdfViewer.clickQuestion' | transloco }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Navigation -->
+          <div class="flex items-center justify-between mt-5">
+            <button
+              (click)="prevCard()"
+              [disabled]="studyIndex() === 0"
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M15 19l-7-7 7-7"
+                />
+              </svg>
+              {{ 'pdfViewer.previous' | transloco }}
+            </button>
+
+            <span class="text-sm text-gray-400 dark:text-gray-500 font-medium">
+              {{ studyIndex() + 1 }} / {{ studyCards().length }}
+            </span>
+
+            <button
+              (click)="nextCard()"
+              [disabled]="studyIndex() === studyCards().length - 1"
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              {{ 'pdfViewer.next' | transloco }}
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      } @else {
+        <!-- ── SETS LIST VIEW ── -->
+        <div
+          class="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-6"
+        >
+          <!-- Header row -->
+          <div class="flex items-start justify-between mb-6">
+            <div>
+              <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 m-0 mb-1">
+                {{ 'pdfViewer.flashcardSets' | transloco }}
+              </h2>
+              <p class="text-sm text-gray-400 dark:text-gray-500 m-0">
+                @if (loadingBatches()) {
+                  {{ 'pdfViewer.loading' | transloco }}
+                } @else if (fcBatches().length === 0) {
+                  {{ 'pdfViewer.noSets' | transloco }}
+                } @else {
+                  {{ fcBatches().length }} {{ 'pdfViewer.available' | transloco }}
+                }
+              </p>
+            </div>
+            <button
+              (click)="showFlashcardGenForm.set(!showFlashcardGenForm())"
+              [disabled]="generatingCards()"
+              class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-emerald-600 disabled:opacity-60 transition-colors flex-shrink-0"
+            >
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              {{ 'pdfViewer.generateNewSet' | transloco }}
+            </button>
+          </div>
+
+          <!-- Inline generate form -->
+          @if (showFlashcardGenForm()) {
+            <div
+              class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl p-5 mb-6 flex flex-col sm:flex-row items-start sm:items-center gap-4"
+            >
+              <div class="flex flex-col gap-1.5 flex-1 w-full sm:w-auto">
+                <label class="text-xs font-medium text-gray-500 dark:text-gray-400">{{
+                  'pdfViewer.numCards' | transloco
+                }}</label>
+                <input
+                  type="number"
+                  [(ngModel)]="flashcardCount"
+                  min="1"
+                  max="30"
+                  class="w-full sm:w-28 px-3 py-2 border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-900 dark:text-gray-100 outline-none bg-white dark:bg-gray-600 focus:border-emerald-400 transition-colors"
+                />
+              </div>
+              <div class="flex items-center gap-2 sm:pt-5">
+                <button
+                  (click)="showFlashcardGenForm.set(false)"
+                  class="px-4 py-2 bg-white dark:bg-gray-600 border border-gray-200 dark:border-gray-500 text-gray-600 dark:text-gray-200 rounded-xl text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-500 transition-colors"
+                >
+                  {{ 'common.cancel' | transloco }}
+                </button>
+                <button
+                  (click)="generateFlashcards()"
+                  [disabled]="generatingCards()"
+                  class="inline-flex items-center gap-2 px-5 py-2 bg-emerald-500 text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-emerald-600 disabled:opacity-60 transition-colors"
+                >
+                  @if (generatingCards()) {
+                    <svg
+                      class="animate-spin"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      width="14"
+                      height="14"
+                    >
+                      <circle
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        stroke-width="4"
+                        style="opacity: 0.25"
+                      ></circle>
+                      <path
+                        fill="currentColor"
+                        style="opacity: 0.75"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      ></path>
+                    </svg>
+                    {{ 'pdfViewer.generating' | transloco }}
+                  } @else {
+                    {{ 'pdfViewer.generate' | transloco }}
+                  }
+                </button>
+              </div>
+            </div>
+          }
+
+          <!-- Loading state -->
+          @if (loadingBatches()) {
+            <div class="text-center py-14">
+              <div
+                class="w-10 h-10 border-4 border-emerald-100 dark:border-emerald-900/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-3"
+              ></div>
+              <p class="text-sm font-medium text-gray-500 m-0">
+                {{ 'pdfViewer.loadingSets' | transloco }}
+              </p>
+            </div>
+          } @else if (fcBatches().length === 0 && !generatingCards()) {
+            <div
+              class="text-center py-14 border-2 border-dashed border-gray-100 dark:border-gray-700 rounded-xl"
+            >
+              <div
+                class="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl flex items-center justify-center mx-auto mb-3"
+              >
+                <svg fill="none" viewBox="0 0 24 24" stroke="#10b981" width="22" height="22">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="1.8"
+                    d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.347.5A3.001 3.001 0 0012 15a3 3 0 00-2.91 2.243l-.347-.5"
+                  />
+                </svg>
+              </div>
+              <p class="text-sm font-medium text-gray-500 m-0 mb-1">
+                {{ 'pdfViewer.emptySets' | transloco }}
+              </p>
+              <p class="text-xs text-gray-400 m-0">{{ 'pdfViewer.emptySetsHint' | transloco }}</p>
+            </div>
+          }
+
+          <!-- Set cards grid -->
+          <div class="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-4">
+            @for (batch of fcBatches(); track batch._id) {
+              <div
+                class="group border border-gray-200 dark:border-gray-700 rounded-2xl p-5 cursor-pointer hover:shadow-md dark:hover:shadow-black/30 hover:border-emerald-200 dark:hover:border-emerald-700 transition-all relative bg-white dark:bg-gray-800"
+                (click)="openBatchStudy(batch)"
+              >
+                <!-- Brain icon -->
+                <div
+                  class="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center mb-4"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#10b981"
+                    stroke-width="1.6"
+                    width="24"
+                    height="24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M9.5 2a4.5 4.5 0 00-4 6.5A4.5 4.5 0 007 17h2v3h6v-3h2a4.5 4.5 0 001.5-8.74A4.5 4.5 0 0014.5 2c-1.16 0-2.22.44-3.01 1.16A4.48 4.48 0 009.5 2z"
+                    />
+                    <line x1="12" y1="6" x2="12" y2="11" />
+                    <line x1="9.5" y1="9" x2="14.5" y2="9" />
+                  </svg>
+                </div>
+
+                <!-- Title + date -->
+                <h3 class="text-sm font-bold text-gray-900 dark:text-gray-100 m-0 mb-1.5">
+                  {{ batch.label }}
+                </h3>
+                <p class="text-xs tracking-wide text-gray-400 dark:text-gray-500 m-0 mb-4">
+                  {{ 'pdfViewer.created' | transloco }} {{ formatShortDate(batch.createdAt) }}
+                </p>
+
+                <!-- Footer: count pill + delete -->
+                <div class="flex items-center justify-between">
+                  <span
+                    class="px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-full text-xs font-semibold"
+                  >
+                    {{ batch.cardIds.length }} {{ 'pdfViewer.cards' | transloco }}
+                  </span>
+                  <button
+                    (click)="$event.stopPropagation(); deleteBatch(batch._id)"
+                    class="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-red-500 bg-transparent border-none cursor-pointer p-1 rounded-lg transition-all"
+                  >
+                    <svg
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      width="14"
+                      height="14"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    }
+
+    @if (activeTab() === 'quizzes') {
+      @if (activeQuiz()) {
+        <!-- ── QUIZ SESSION (one question at a time) ── -->
+        <div>
+          <!-- Title row -->
+          <div class="flex items-center justify-between mb-6">
+            <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 m-0">
+              {{ activeQuiz()!.title }} {{ 'pdfViewer.quizSuffix' | transloco }}
+            </h1>
+            <button
+              (click)="closeActiveQuiz()"
+              class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 text-gray-600 border-none rounded-xl text-xs font-semibold cursor-pointer hover:bg-gray-200 transition-colors"
+            >
+              ← {{ 'pdfViewer.back' | transloco }}
+            </button>
+          </div>
+
+          @if (quizSubmitted()) {
+            <!-- ── RESULTS VIEW: all questions stacked ── -->
+
+            <!-- Score banner -->
+            <div
+              class="rounded-2xl p-6 text-center mb-6 border"
+              [class.bg-emerald-50]="quizScore() >= 70"
+              [class.dark:bg-emerald-900/20]="quizScore() >= 70"
+              [class.border-emerald-200]="quizScore() >= 70"
+              [class.dark:border-emerald-700]="quizScore() >= 70"
+              [class.bg-red-50]="quizScore() < 70"
+              [class.dark:bg-red-900/20]="quizScore() < 70"
+              [class.border-red-200]="quizScore() < 70"
+              [class.dark:border-red-700]="quizScore() < 70"
+            >
+              <div
+                class="text-4xl font-extrabold mb-1"
+                [class.text-emerald-600]="quizScore() >= 70"
+                [class.text-red-600]="quizScore() < 70"
+              >
+                {{ quizScore() }}%
+              </div>
+              <div
+                class="text-base font-semibold mb-1"
+                [class.text-emerald-600]="quizScore() >= 70"
+                [class.text-red-600]="quizScore() < 70"
+              >
+                {{
+                  quizScore() >= 70
+                    ? ('pdfViewer.passed' | transloco)
+                    : ('pdfViewer.keepStudying' | transloco)
+                }}
+              </div>
+              <div class="text-xs text-gray-500 dark:text-gray-400">
+                {{ correctCount() }} / {{ activeQuiz()!.questions.length }}
+                {{ 'pdfViewer.correct' | transloco }}
+              </div>
+            </div>
+
+            <!-- Stacked questions -->
+            <div class="flex flex-col gap-4">
+              @for (q of activeQuiz()!.questions; track $index; let qi = $index) {
+                <div
+                  class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-8"
+                >
+                  <!-- "● Question N" badge -->
+                  <div
+                    class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-semibold mb-5"
+                    [class.bg-emerald-50]="activeAnswers()[qi] === q.correctAnswer"
+                    [class.text-emerald-600]="activeAnswers()[qi] === q.correctAnswer"
+                    [class.bg-red-50]="activeAnswers()[qi] !== q.correctAnswer"
+                    [class.text-red-600]="activeAnswers()[qi] !== q.correctAnswer"
+                  >
+                    <span
+                      class="w-2 h-2 rounded-full"
+                      [class.bg-emerald-500]="activeAnswers()[qi] === q.correctAnswer"
+                      [class.bg-red-500]="activeAnswers()[qi] !== q.correctAnswer"
+                    ></span>
+                    Question {{ qi + 1 }}
+                    @if (activeAnswers()[qi] === q.correctAnswer) {
+                      <svg
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        width="14"
+                        height="14"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2.5"
+                          d="M5 13l4 4L19 7"
+                        />
+                      </svg>
+                    } @else {
+                      <svg
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        width="14"
+                        height="14"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2.5"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
+                      </svg>
+                    }
+                  </div>
+
+                  <!-- Question text -->
+                  <p
+                    class="text-base font-bold text-gray-900 dark:text-gray-100 mb-7 leading-relaxed"
+                  >
+                    {{ q.question }}
+                  </p>
+
+                  <!-- Options -->
+                  <div class="flex flex-col gap-3">
+                    @for (opt of q.options; track $index; let oi = $index) {
+                      @let isSelected = activeAnswers()[qi] === oi;
+                      @let isCorrect = oi === q.correctAnswer;
+                      @let isWrong = isSelected && oi !== q.correctAnswer;
+
+                      <div
+                        class="w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 text-left transition-all"
+                        [class.border-emerald-500]="isCorrect"
+                        [class.bg-emerald-50]="isCorrect"
+                        [class.dark:bg-emerald-900/20]="isCorrect"
+                        [class.border-red-400]="isWrong"
+                        [class.bg-red-50]="isWrong"
+                        [class.dark:bg-red-900/20]="isWrong"
+                        [class.border-gray-200]="!isCorrect && !isWrong"
+                        [class.dark:border-gray-600]="!isCorrect && !isWrong"
+                        [class.bg-white]="!isCorrect && !isWrong"
+                        [class.dark:bg-gray-800]="!isCorrect && !isWrong"
+                      >
+                        <!-- Radio circle -->
+                        <span
+                          class="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center"
+                          [class.border-emerald-500]="isCorrect"
+                          [class.bg-emerald-500]="isCorrect"
+                          [class.border-red-400]="isWrong"
+                          [class.bg-red-400]="isWrong"
+                          [class.border-gray-300]="!isCorrect && !isWrong"
+                          [class.dark:border-gray-500]="!isCorrect && !isWrong"
+                        >
+                          @if (isSelected || isCorrect) {
+                            <span class="w-2 h-2 bg-white rounded-full"></span>
+                          }
+                        </span>
+
+                        <!-- Option text -->
+                        <span
+                          class="flex-1 text-sm leading-relaxed"
+                          [class.text-emerald-700]="isCorrect"
+                          [class.dark:text-emerald-300]="isCorrect"
+                          [class.font-medium]="isCorrect"
+                          [class.text-red-600]="isWrong"
+                          [class.dark:text-red-400]="isWrong"
+                          [class.text-gray-700]="!isCorrect && !isWrong"
+                          [class.dark:text-gray-300]="!isCorrect && !isWrong"
+                        >
+                          {{ opt }}
+                        </span>
+
+                        <!-- Right check / cross icon -->
+                        @if (isCorrect) {
+                          <span
+                            class="w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0"
+                          >
+                            <svg
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="white"
+                              width="13"
+                              height="13"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="3"
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                          </span>
+                        }
+                        @if (isWrong) {
+                          <span
+                            class="w-6 h-6 rounded-full bg-red-400 flex items-center justify-center flex-shrink-0"
+                          >
+                            <svg
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="white"
+                              width="13"
+                              height="13"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="3"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </span>
+                        }
+                      </div>
+                    }
+                  </div>
+
+                  <!-- Explanation box (wrong answer) -->
+                  @if (activeAnswers()[qi] !== q.correctAnswer) {
+                    <div
+                      class="flex items-start gap-2 mt-5 p-3.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl text-xs text-amber-800 dark:text-amber-300 leading-relaxed"
+                    >
+                      <svg
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        width="15"
+                        height="15"
+                        class="flex-shrink-0 mt-px"
+                      >
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                        />
+                      </svg>
+                      @if (q.explanation) {
+                        <span
+                          ><strong>{{ 'pdfViewer.explanation' | transloco }}</strong>
+                          {{ q.explanation }}</span
+                        >
+                      } @else {
+                        <span
+                          ><strong>{{ 'pdfViewer.correctAnswer' | transloco }}</strong>
+                          {{ q.options[q.correctAnswer] }}</span
+                        >
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Results action buttons -->
+            <div class="flex items-center justify-center gap-3 mt-8">
+              <button
+                (click)="closeActiveQuiz()"
+                class="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-emerald-600 transition-colors"
+              >
+                {{ 'pdfViewer.done' | transloco }}
+              </button>
+            </div>
+          } @else {
+            <!-- ── TAKING VIEW: one question at a time with prev/next ── -->
+
+            <!-- Progress row: "Question N of M" + "N answered" -->
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                Question {{ currentQuestionIndex() + 1 }} of {{ activeQuiz()!.questions.length }}
+              </span>
+              <span class="text-sm text-gray-400 dark:text-gray-500">
+                {{ answeredCount() }} {{ 'pdfViewer.answered' | transloco }}
+              </span>
+            </div>
+
+            <!-- Green progress bar -->
+            <div class="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full mb-7">
+              <div
+                class="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                [style.width.%]="(answeredCount() / activeQuiz()!.questions.length) * 100"
+              ></div>
+            </div>
+
+            <!-- Question card -->
+            @let qi = currentQuestionIndex();
+            @let q = activeQuiz()!.questions[qi];
+
+            <div
+              class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-8 mb-6"
+            >
+              <!-- "● Question N" badge -->
+              <div
+                class="inline-flex items-center gap-2 px-4 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-full text-sm font-semibold mb-5"
+              >
+                <span class="w-2 h-2 bg-emerald-500 rounded-full"></span>
+                Question {{ qi + 1 }}
+              </div>
+
+              <!-- Question text -->
+              <p class="text-base font-bold text-gray-900 dark:text-gray-100 mb-7 leading-relaxed">
+                {{ q.question }}
+              </p>
+
+              <!-- Options -->
+              <div class="flex flex-col gap-3">
+                @for (opt of q.options; track $index; let oi = $index) {
+                  @let isSelected = activeAnswers()[qi] === oi;
+
+                  <button
+                    (click)="setAnswer(qi, oi)"
+                    class="w-full flex items-center gap-4 px-5 py-4 rounded-xl border-2 text-left transition-all cursor-pointer"
+                    [class.border-emerald-500]="isSelected"
+                    [class.bg-emerald-50]="isSelected"
+                    [class.dark:bg-emerald-900/20]="isSelected"
+                    [class.border-gray-200]="!isSelected"
+                    [class.dark:border-gray-600]="!isSelected"
+                    [class.bg-white]="!isSelected"
+                    [class.dark:bg-gray-800]="!isSelected"
+                    [class.hover:border-emerald-300]="!isSelected"
+                    [class.hover:bg-emerald-50]="!isSelected"
+                  >
+                    <!-- Custom radio circle -->
+                    <span
+                      class="w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all"
+                      [class.border-emerald-500]="isSelected"
+                      [class.bg-emerald-500]="isSelected"
+                      [class.border-gray-300]="!isSelected"
+                      [class.dark:border-gray-500]="!isSelected"
+                    >
+                      @if (isSelected) {
+                        <span class="w-2 h-2 bg-white rounded-full"></span>
+                      }
+                    </span>
+
+                    <!-- Option text -->
+                    <span
+                      class="flex-1 text-sm leading-relaxed"
+                      [class.text-emerald-700]="isSelected"
+                      [class.dark:text-emerald-300]="isSelected"
+                      [class.font-medium]="isSelected"
+                      [class.text-gray-700]="!isSelected"
+                      [class.dark:text-gray-300]="!isSelected"
+                    >
+                      {{ opt }}
+                    </span>
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Navigation row -->
+            <div class="flex items-center justify-between">
+              <button
+                (click)="prevQuestion()"
+                [disabled]="currentQuestionIndex() === 0"
+                class="inline-flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl text-sm font-medium cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                {{ 'pdfViewer.previous' | transloco }}
+              </button>
+
+              @if (currentQuestionIndex() < activeQuiz()!.questions.length - 1) {
+                <button
+                  (click)="nextQuestion()"
+                  class="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-emerald-600 transition-colors"
+                >
+                  Next
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              } @else {
+                <button
+                  (click)="submitActiveQuiz()"
+                  [disabled]="!canSubmit()"
+                  class="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+                >
+                  {{ 'pdfViewer.submitQuiz' | transloco }}
+                </button>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-base font-semibold text-gray-900 dark:text-gray-100 m-0">
+            @if (savedQuizzes().length > 0) {
+              {{ savedQuizzes().length }} {{ 'pdfViewer.quizzes' | transloco }}
+            } @else {
+              {{ 'pdfViewer.quizzes' | transloco }}
+            }
+          </h2>
+          <button
+            (click)="showGenForm.set(true)"
+            class="inline-flex items-center gap-2 px-5 py-2 bg-emerald-500 text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-emerald-600 transition-colors"
+            [disabled]="showGenForm()"
+          >
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="16" height="16">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            {{ 'pdfViewer.generateQuiz' | transloco }}
+          </button>
+        </div>
+
+        @if (showGenForm()) {
+          <div
+            class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl p-5 mb-5"
+          >
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 m-0">
+                {{ 'pdfViewer.newQuiz' | transloco }}
+              </h3>
+              <button
+                (click)="showGenForm.set(false)"
+                class="bg-transparent border-none text-gray-400 dark:text-gray-500 cursor-pointer p-0.5 rounded-lg hover:text-gray-600 dark:hover:text-gray-300 transition-colors flex items-center"
+              >
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div class="flex flex-col sm:flex-row gap-4 mb-4">
+              <div class="flex-1 flex flex-col gap-1.5">
+                <label class="text-xs font-medium text-gray-600 dark:text-gray-400">{{
+                  'pdfViewer.numQuestions' | transloco
+                }}</label>
+                <input
+                  type="number"
+                  [(ngModel)]="quizCount"
+                  min="1"
+                  max="20"
+                  class="px-3.5 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-gray-100 outline-none bg-white dark:bg-gray-600 focus:border-emerald-500 transition-colors"
+                />
+              </div>
+              <div class="flex-1 flex flex-col gap-1.5">
+                <label class="text-xs font-medium text-gray-600 dark:text-gray-400">{{
+                  'pdfViewer.difficulty' | transloco
+                }}</label>
+                <select
+                  [(ngModel)]="quizDifficulty"
+                  class="px-3.5 py-2.5 border border-gray-200 dark:border-gray-600 rounded-xl text-sm text-gray-900 dark:text-gray-100 outline-none bg-white dark:bg-gray-600 focus:border-emerald-500 transition-colors"
+                >
+                  <option value="easy">{{ 'pdfViewer.easy' | transloco }}</option>
+                  <option value="medium">{{ 'pdfViewer.medium' | transloco }}</option>
+                  <option value="hard">{{ 'pdfViewer.hard' | transloco }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex justify-end gap-2.5">
+              <button
+                (click)="showGenForm.set(false)"
+                class="inline-flex items-center gap-1.5 px-4 py-2 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-200 border-none rounded-xl text-xs font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
+              >
+                {{ 'common.cancel' | transloco }}
+              </button>
+              <button
+                (click)="generateQuiz()"
+                [disabled]="generatingQuiz()"
+                class="inline-flex items-center gap-2 px-5 py-2 bg-emerald-500 text-white border-none rounded-xl text-sm font-semibold cursor-pointer hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
+              >
+                @if (generatingQuiz()) {
+                  <svg class="animate-spin" fill="none" viewBox="0 0 24 24" width="15" height="15">
+                    <circle
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      stroke-width="4"
+                      style="opacity: 0.25"
+                    ></circle>
+                    <path
+                      fill="currentColor"
+                      style="opacity: 0.75"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                    ></path>
+                  </svg>
+                  {{ 'pdfViewer.generating' | transloco }}
+                } @else {
+                  {{ 'pdfViewer.generate' | transloco }}
+                }
+              </button>
+            </div>
+          </div>
+        }
+
+        @if (loadingQuizzes()) {
+          <div class="flex items-center justify-center py-16">
+            <div
+              class="w-10 h-10 border-4 border-gray-100 dark:border-gray-700 border-t-emerald-500 rounded-full animate-spin"
+            ></div>
+          </div>
+        } @else if (savedQuizzes().length === 0 && !showGenForm()) {
+          <div
+            class="text-center py-16 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-xl"
+          >
+            <div
+              class="w-12 h-12 bg-gray-50 dark:bg-gray-700 rounded-xl flex items-center justify-center text-gray-400 dark:text-gray-500 mx-auto mb-3"
+            >
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                />
+              </svg>
+            </div>
+            <p class="text-sm font-medium text-gray-500 m-0 mb-1.5">
+              {{ 'pdfViewer.noQuizzesYet' | transloco }}
+            </p>
+            <p class="text-xs text-gray-400 m-0">{{ 'pdfViewer.noQuizzesHint' | transloco }}</p>
+          </div>
+        }
+
+        <div class="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-4">
+          @for (sq of savedQuizzes(); track sq._id) {
+            <div
+              class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 flex flex-col gap-3"
+            >
+              <div
+                class="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300 w-fit"
+                [class.bg-emerald-50]="sq.result?.score != null"
+                [class.dark:bg-emerald-900/20]="sq.result?.score != null"
+                [class.text-emerald-700]="sq.result?.score != null"
+                [class.dark:text-emerald-400]="sq.result?.score != null"
+              >
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"
+                  />
+                </svg>
+                @if (sq.result && sq.result.score) {
+                  {{ 'pdfViewer.score' | transloco }} {{ sq.result.score + '%' }}
+                }
+              </div>
+              <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 m-0 leading-tight">
+                {{ sq.title }}
+              </h3>
+              <p class="text-xs font-semibold tracking-wide text-gray-400 dark:text-gray-500 m-0">
+                {{ 'pdfViewer.created' | transloco }} {{ formatShortDate(sq.createdAt) }}
+              </p>
+              <div class="flex gap-2">
+                <span
+                  class="px-3 py-1 border border-gray-200 dark:border-gray-600 rounded-full text-xs font-medium text-gray-600 dark:text-gray-300"
+                  >{{ sq.questions.length }} {{ 'pdfViewer.questions' | transloco }}</span
+                >
+              </div>
+              <div class="flex gap-2 mt-1">
+                @if (!sq.result?.score) {
+                  <button
+                    (click)="startQuiz(sq)"
+                    class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 bg-emerald-500 text-white border-none rounded-xl text-xs font-semibold cursor-pointer hover:bg-emerald-600 transition-colors"
+                  >
+                    <svg
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      width="15"
+                      height="15"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
+                      />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    {{ 'pdfViewer.startQuiz' | transloco }}
+                  </button>
+                } @else {
+                  <button
+                    (click)="viewResults(sq)"
+                    class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-200 border-none rounded-xl text-xs font-semibold cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500 transition-colors"
+                  >
+                    <svg
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      width="15"
+                      height="15"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                      />
+                    </svg>
+                    {{ 'pdfViewer.viewResults' | transloco }}
+                  </button>
+                }
+                <button
+                  (click)="deleteQuiz(sq._id)"
+                  class="py-2.5 px-3 bg-transparent border border-gray-200 dark:border-gray-600 rounded-xl text-gray-300 cursor-pointer flex items-center hover:text-red-500 hover:border-red-300 transition-colors"
+                  [title]="'pdfViewer.deleteQuiz' | transloco"
+                >
+                  <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="14" height="14">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    @if (toastVisible()) {
+      <div
+        class="fixed top-20 right-6 bg-white dark:bg-gray-800 border border-emerald-100 dark:border-emerald-700 rounded-xl px-4 py-3 flex items-center gap-2 text-sm font-medium text-emerald-700 dark:text-emerald-400 shadow-lg dark:shadow-black/30 z-[2000] animate-[toastIn_0.25s_ease,_toastOut_0.25s_ease_2.75s_forwards]"
+      >
+        <svg fill="none" viewBox="0 0 24 24" stroke="#10b981" width="18" height="18">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        {{ toastMsg() }}
+      </div>
+    }
+
+    @if (modalOpen()) {
+      <div
+        class="fixed inset-0 bg-black/45 backdrop-blur-sm flex items-center justify-center z-[1000] p-6"
+        (click)="closeModal()"
+      >
+        <div
+          class="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-[520px] max-h-[82vh] flex flex-col shadow-2xl dark:shadow-black/40 animate-[modalIn_0.2s_ease]"
+          (click)="$event.stopPropagation()"
+        >
+          <div
+            class="flex items-start justify-between px-6 py-6 pb-4 border-b border-gray-50 dark:border-gray-700 flex-shrink-0"
+          >
+            <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 m-0 pr-4 leading-tight">
+              {{ modalTitle() }}
+            </h2>
+            <button
+              (click)="closeModal()"
+              class="bg-transparent border-none text-gray-400 dark:text-gray-500 cursor-pointer p-0.5 rounded-lg hover:text-gray-600 dark:hover:text-gray-200 transition-colors flex items-center flex-shrink-0"
+              [title]="'pdfViewer.close' | transloco"
+            >
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" width="20" height="20">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+          <div
+            class="modal-markdown-body flex-1 overflow-y-auto px-6 py-5 pb-7 text-sm text-gray-600 dark:text-gray-300 leading-relaxed"
+            [innerHTML]="renderMarkdown(modalContent())"
+          ></div>
+        </div>
+      </div>
+    }
+  </div>
+} @else {
+  <div class="flex flex-col items-center justify-center min-h-[300px]">
+    <div
+      class="w-9 h-9 border-[3px] border-emerald-100 border-t-emerald-500 rounded-full animate-spin mb-3"
+    ></div>
+    <p class="text-sm text-gray-400">{{ 'pdfViewer.loadingDoc' | transloco }}</p>
+  </div>
+}

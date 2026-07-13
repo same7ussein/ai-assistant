@@ -1,0 +1,68 @@
+<div class="max-w-3xl mx-auto px-4 py-8">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">{{ 'quiz.title' | transloco }}</h1>
+
+  @if (!quiz()) {
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm dark:shadow-black/20 border border-gray-100 dark:border-gray-700 max-w-sm">
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'quiz.numQuestions' | transloco }}</label>
+        <input type="number" [(ngModel)]="count" min="1" max="20" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100" />
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{{ 'quiz.difficulty' | transloco }}</label>
+        <select [(ngModel)]="difficulty" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
+          <option value="easy">{{ 'quiz.easy' | transloco }}</option>
+          <option value="medium">{{ 'quiz.medium' | transloco }}</option>
+          <option value="hard">{{ 'quiz.hard' | transloco }}</option>
+        </select>
+      </div>
+      <button class="bg-emerald-600 text-white px-4 py-2 rounded disabled:opacity-50 hover:bg-emerald-700" (click)="generate()" [disabled]="generating()">{{ generating() ? ('quiz.generating' | transloco) : ('quiz.generateQuiz' | transloco) }}</button>
+      @if (error()) { <div class="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-4 py-2 rounded text-sm mt-3">{{ error() | transloco }}</div> }
+    </div>
+  }
+
+  @if (quiz(); as q) {
+    <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+      <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100 m-0">{{ q.title }}</h2>
+      <button class="bg-emerald-600 text-white text-sm px-3 py-1.5 rounded hover:bg-emerald-700" (click)="reset()">{{ 'quiz.newQuiz' | transloco }}</button>
+    </div>
+
+    <div class="space-y-4">
+      @for (question of q.questions; track i; let i = $index) {
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-5 shadow-sm dark:shadow-black/20 border border-gray-100 dark:border-gray-700">
+          <h3 class="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400 font-semibold mb-2">{{ 'quiz.question' | transloco }} {{ i + 1 }}</h3>
+          <p class="text-gray-900 dark:text-gray-100 font-medium mb-3">{{ question.question }}</p>
+          <div class="space-y-1.5">
+            @for (opt of question.options; track j; let j = $index) {
+              <label class="flex items-center gap-2 px-3 py-2 border rounded cursor-pointer text-sm"
+                [class.border-emerald-600]="!submitted() && answers()[i] === j"
+                [class.bg-emerald-50]="!submitted() && answers()[i] === j"
+                [class.dark:bg-emerald-900/20]="!submitted() && answers()[i] === j"
+                [class.border-emerald-500]="submitted() && j === question.correctAnswer"
+                [class.bg-emerald-50]="submitted() && j === question.correctAnswer"
+                [class.dark:bg-emerald-900/20]="submitted() && j === question.correctAnswer"
+                [class.border-red-500]="submitted() && answers()[i] === j && j !== question.correctAnswer"
+                [class.bg-red-50]="submitted() && answers()[i] === j && j !== question.correctAnswer"
+                [class.dark:bg-red-900/20]="submitted() && answers()[i] === j && j !== question.correctAnswer"
+                [class.dark:border-gray-600]="!submitted() && answers()[i] !== j"
+                [class.text-gray-900]="!submitted() && answers()[i] !== j"
+                [class.dark:text-gray-100]="!submitted() && answers()[i] !== j">
+                <input type="radio" [name]="'q' + i" [value]="j" [ngModel]="answers()[i]" (ngModelChange)="setAnswer(i, $event)" [disabled]="submitted()" class="accent-emerald-600" />
+                {{ opt }}
+              </label>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    @if (!submitted()) {
+      <button class="w-full bg-emerald-600 text-white py-3 rounded-lg mt-4 text-base disabled:opacity-50 hover:bg-emerald-700" (click)="submitQuiz()" [disabled]="!canSubmit()">{{ 'quiz.submit' | transloco }}</button>
+    }
+    @if (submitted()) {
+      <div class="rounded-lg p-5 mt-4 text-center" [class.bg-emerald-50]="score() >= 70" [class.bg-red-50]="score() < 70">
+        <h3 class="text-xl font-bold m-0" [class.text-emerald-700]="score() >= 70" [class.text-red-700]="score() < 70">{{ score() >= 70 ? ('quiz.passed' | transloco) : ('quiz.keepStudying' | transloco) }}</h3>
+        <p class="text-gray-700 dark:text-gray-300 mt-1">{{ correctCount() }}/{{ quiz()!.questions.length }} {{ 'quiz.correct' | transloco }} ({{ score() }}{{ 'quiz.percent' | transloco }})</p>
+      </div>
+    }
+  }
+</div>

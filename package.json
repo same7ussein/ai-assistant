@@ -1,0 +1,9 @@
+{
+  "name": "ai-learning-assistant",
+  "private": true,
+  "scripts": {
+    "postinstall": "npm install --prefix backend && npm install --prefix frontend --include=dev",
+    "build": "npm run build --prefix frontend",
+    "start": "npm start --prefix backend"
+  }
+}

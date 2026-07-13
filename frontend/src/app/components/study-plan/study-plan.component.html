@@ -1,0 +1,248 @@
+<div class="max-w-[1000px] mx-auto px-4 sm:px-10 py-8 pb-[60px]">
+  <div class="mb-7 flex items-start justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 m-0 mb-1.5">{{ 'studyPlan.title' | transloco }}</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 m-0">{{ 'studyPlan.subtitle' | transloco }}</p>
+    </div>
+    @if (plan() && !loading()) {
+      <button (click)="generate()" [disabled]="generating()" class="inline-flex items-center gap-2 px-4 py-2 bg-purple-500 text-white text-sm font-semibold rounded-lg border-none cursor-pointer hover:bg-purple-600 transition-colors disabled:opacity-50">
+        @if (generating()) {
+          <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          {{ 'studyPlan.regenerating' | transloco }}
+        } @else {
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          {{ 'studyPlan.regenerate' | transloco }}
+        }
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="py-20 text-center">
+      <div class="w-12 h-12 border-4 border-purple-100 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-sm font-medium text-gray-500 m-0">{{ 'studyPlan.loading' | transloco }}</p>
+    </div>
+  }
+
+  @if (!loading() && !plan()) {
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-12 text-center">
+      <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <svg class="w-8 h-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 m-0 mb-2">{{ 'studyPlan.noPlan' | transloco }}</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 m-0 mb-6 max-w-[400px] mx-auto">{{ 'studyPlan.noPlanDesc' | transloco }}</p>
+      <button (click)="generate()" [disabled]="generating()" class="inline-flex items-center gap-2 px-6 py-2.5 bg-purple-500 text-white text-sm font-semibold rounded-lg border-none cursor-pointer hover:bg-purple-600 transition-colors disabled:opacity-50">
+        @if (generating()) {
+          <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          {{ 'studyPlan.generating' | transloco }}
+        } @else {
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          {{ 'studyPlan.generatePlan' | transloco }}
+        }
+      </button>
+    </div>
+  }
+
+  @if (error()) {
+    <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-sm text-red-600 dark:text-red-400 text-center">
+      {{ error() | transloco }}
+    </div>
+  }
+
+  @if (plan(); as p) {
+    <div class="mb-6">
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 m-0">{{ 'studyPlan.weeklyOverview' | transloco }}</h2>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+              {{ p.weekStart | date:'MMM d' }} – {{ p.weekEnd | date:'MMM d, yyyy' }}
+            </p>
+          </div>
+          @if (p.focusScore != null) {
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-medium text-gray-500 dark:text-gray-400">{{ 'studyPlan.focusScore' | transloco }}</span>
+              <div class="flex items-center gap-1.5">
+                <div class="w-24 h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full transition-all duration-700"
+                       [style.width.%]="p.focusScore"
+                       [class.bg-red-400]="p.focusScore < 50"
+                       [class.bg-amber-400]="p.focusScore >= 50 && p.focusScore < 75"
+                       [class.bg-emerald-400]="p.focusScore >= 75">
+                  </div>
+                </div>
+                <span class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ p.focusScore }}</span>
+              </div>
+            </div>
+          }
+        </div>
+
+        @if (p.weeklyGoal) {
+          <div class="bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800 rounded-xl p-3 mb-4 flex items-start gap-2.5">
+            <svg class="w-5 h-5 shrink-0 mt-0.5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p class="text-sm text-purple-700 dark:text-purple-300 m-0">{{ p.weeklyGoal }}</p>
+          </div>
+        }
+
+        <div class="flex items-center gap-4 flex-wrap">
+          <div class="flex items-center gap-3">
+            <div class="relative w-16 h-16">
+              <svg class="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" stroke-width="3" class="text-gray-100 dark:text-gray-700"/>
+                <circle cx="18" cy="18" r="15.5" fill="none" stroke="currentColor" stroke-width="3" stroke-dasharray="97.4"
+                        [attr.stroke-dashoffset]="97.4 - (97.4 * progressPercent / 100)"
+                        class="text-purple-500 transition-all duration-700"/>
+              </svg>
+              <span class="absolute inset-0 flex items-center justify-center text-sm font-bold text-gray-900 dark:text-gray-100">{{ progressPercent }}%</span>
+            </div>
+            <div>
+              <p class="text-lg font-bold text-gray-900 dark:text-gray-100 m-0">{{ completedMinutes }}<span class="text-sm font-normal text-gray-500"> / {{ totalWeeklyMinutes }} {{ 'studyPlan.minutes' | transloco }}</span></p>
+              <p class="text-xs text-gray-500 dark:text-gray-400 m-0">{{ 'studyPlan.weeklyProgress' | transloco }}</p>
+            </div>
+          </div>
+
+          @if (p.strengths.length > 0) {
+            <div class="flex items-center gap-1.5 flex-wrap ml-auto">
+              @for (s of p.strengths; track s) {
+                <span class="text-xs bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 px-2 py-1 rounded-md">{{ s }}</span>
+              }
+            </div>
+          }
+        </div>
+
+        @if (p.weakAreas.length > 0) {
+          <div class="mt-3 flex items-center gap-1.5 flex-wrap">
+            <span class="text-xs font-medium text-gray-500">{{ 'studyPlan.weakAreas' | transloco }}:</span>
+            @for (w of p.weakAreas; track w) {
+              <span class="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-2 py-1 rounded-md">{{ w }}</span>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <div class="flex gap-1.5 sm:gap-2 mb-5 overflow-x-auto pb-2">
+      @for (day of p.dailyPlans; track day.dayOfWeek) {
+        @let status = getDayStatus(day.dayOfWeek);
+        <button (click)="setActiveDay(day.dayOfWeek)"
+                class="flex flex-col items-center gap-1 px-3 sm:px-4 py-2.5 rounded-xl border-2 transition-all cursor-pointer shrink-0 min-w-[60px] sm:min-w-[80px]"
+                [class.border-purple-500]="activeDay() === day.dayOfWeek"
+                [class.border-gray-200]="activeDay() !== day.dayOfWeek"
+                [class.bg-purple-50]="activeDay() === day.dayOfWeek"
+                [class.dark:bg-purple-900/20]="activeDay() === day.dayOfWeek"
+                [class.bg-white]="activeDay() !== day.dayOfWeek"
+                [class.dark:bg-gray-800]="activeDay() !== day.dayOfWeek"
+                [class.dark:border-gray-600]="activeDay() !== day.dayOfWeek">
+          <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">{{ getDayAbbreviation(day.dayOfWeek) }}</span>
+          <span class="text-sm font-bold text-gray-900 dark:text-gray-100">{{ day.date | date:'d' }}</span>
+          @if (status === 'completed') {
+            <span class="w-2 h-2 bg-emerald-400 rounded-full"></span>
+          } @else if (status === 'partial') {
+            <span class="w-2 h-2 bg-amber-400 rounded-full"></span>
+          } @else if (status === 'pending') {
+            <span class="w-2 h-2 bg-red-400 rounded-full"></span>
+          } @else {
+            <span class="w-2 h-2 bg-gray-200 dark:bg-gray-600 rounded-full"></span>
+          }
+        </button>
+      }
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-5">
+        <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 m-0">
+          {{ weekDays[activeDay()] }}
+          <span class="text-sm font-normal text-gray-500 ml-2">{{ completedTodayMinutes }}/{{ todayMinutes }} {{ 'studyPlan.minutes' | transloco }}</span>
+        </h3>
+        <span class="text-xs text-gray-500 dark:text-gray-400">
+          @let dayPlan = p.dailyPlans[activeDay()];
+          {{ dayPlan ? dayPlan.tasks.length : 0 }} {{ 'studyPlan.tasks' | transloco }}
+        </span>
+      </div>
+
+      @let active = p.dailyPlans[activeDay()];
+      @if (active && active.tasks.length > 0) {
+        <div class="space-y-3">
+          @for (task of active.tasks; track task._id) {
+            <div class="border-l-[3px] rounded-xl p-4 transition-all"
+                 [class.opacity-50]="task.skipped"
+                 [ngClass]="getPriorityClass(task.priority)">
+              <div class="flex items-start gap-3">
+                <button (click)="toggleTask(task)"
+                        class="w-5 h-5 rounded-full border-2 shrink-0 mt-0.5 flex items-center justify-center transition-all cursor-pointer"
+                        [class.border-emerald-400]="!task.completed"
+                        [class.bg-emerald-400]="task.completed"
+                        [class.border-transparent]="task.completed">
+                  @if (task.completed) {
+                    <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                    </svg>
+                  }
+                </button>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-start justify-between gap-2">
+                    <div>
+                      <p class="text-sm font-semibold text-gray-900 dark:text-gray-100 m-0"
+                         [class.line-through]="task.completed || task.skipped"
+                         [class.text-gray-400]="task.skipped">{{ task.title }}</p>
+                      @if (task.description) {
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 m-0">{{ task.description }}</p>
+                      }
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <span class="text-xs font-medium text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ task.duration }}m</span>
+                      <span class="w-2 h-2 rounded-full shrink-0" [ngClass]="getPriorityDot(task.priority)"></span>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 mt-1.5">
+                    <span class="text-[11px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wide">{{ getTypeLabel(task.type) | transloco }}</span>
+                    @if (!task.completed && !task.skipped) {
+                      <button (click)="skipTask(task)" class="text-[11px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 underline cursor-pointer border-none bg-transparent p-0">{{ 'studyPlan.skip' | transloco }}</button>
+                    }
+                    @if (task.skipped) {
+                      <button (click)="skipTask(task)" class="text-[11px] text-amber-500 hover:text-amber-600 underline cursor-pointer border-none bg-transparent p-0">{{ 'studyPlan.unskip' | transloco }}</button>
+                    }
+                    @if (task.completed && task.completedAt) {
+                      <span class="text-[11px] text-emerald-500">{{ task.completedAt | date:'shortTime' }}</span>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="py-8 text-center">
+          <p class="text-sm text-gray-400 dark:text-gray-500 m-0">{{ 'studyPlan.noTasks' | transloco }}</p>
+        </div>
+      }
+    </div>
+
+    <div class="mt-5 flex items-center gap-4 justify-center flex-wrap text-xs text-gray-400 dark:text-gray-500">
+      <div class="flex items-center gap-1.5">
+        <span class="w-3 h-3 rounded-sm border border-emerald-400 bg-emerald-50 dark:bg-emerald-900/30"></span>
+        {{ 'studyPlan.completed' | transloco }}
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-3 h-3 rounded-sm border border-amber-400 bg-amber-50 dark:bg-amber-900/30"></span>
+        {{ 'studyPlan.partial' | transloco }}
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-3 h-3 rounded-sm border border-red-400 bg-red-50 dark:bg-red-900/30"></span>
+        {{ 'studyPlan.pending' | transloco }}
+      </div>
+      <div class="flex items-center gap-1.5">
+        <span class="w-3 h-3 rounded-sm border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800"></span>
+        {{ 'studyPlan.future' | transloco }}
+      </div>
+    </div>
+  }
+</div>

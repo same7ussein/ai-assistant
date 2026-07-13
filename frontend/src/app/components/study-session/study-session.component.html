@@ -1,0 +1,201 @@
+<div class="max-w-[800px] mx-auto px-4 sm:px-10 py-8 pb-[60px]">
+  <div class="mb-7">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 m-0 mb-1.5">{{ 'studySession.title' | transloco }}</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 m-0">{{ 'studySession.subtitle' | transloco }}</p>
+  </div>
+
+  @if (loading()) {
+    <div class="py-20 text-center">
+      <div class="w-12 h-12 border-4 border-emerald-100 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-sm font-medium text-gray-500 m-0">{{ 'studySession.loading' | transloco }}</p>
+    </div>
+  }
+
+  @if (!loading() && !sessionActive() && !sessionEnded()) {
+    @if (cards().length === 0) {
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-12 text-center">
+        <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <svg class="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 m-0 mb-2">{{ 'studySession.allCaughtUp' | transloco }}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 m-0 mb-6 max-w-[400px] mx-auto">{{ 'studySession.allCaughtUpDesc' | transloco }}</p>
+        <a routerLink="/documents" class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white text-sm font-semibold rounded-lg no-underline hover:bg-emerald-600 transition-colors">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          {{ 'studySession.uploadDocuments' | transloco }}
+        </a>
+      </div>
+    } @else {
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-12 text-center">
+        <div class="w-16 h-16 bg-purple-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <svg class="w-8 h-8 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
+        </div>
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100 m-0 mb-2">{{ 'studySession.cardsDue' | transloco: { count: cards().length } }}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 m-0 mb-6">{{ 'studySession.readyToPractice' | transloco }}</p>
+        <button (click)="startSession()" [disabled]="starting()" class="inline-flex items-center gap-2 px-6 py-2.5 bg-emerald-500 text-white text-sm font-semibold rounded-lg border-none cursor-pointer hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          @if (starting()) {
+            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            {{ 'studySession.starting' | transloco }}
+          } @else {
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            {{ 'studySession.startSession' | transloco }}
+          }
+        </button>
+      </div>
+    }
+  }
+
+  @if (sessionActive()) {
+    @let card = cards()[currentIndex()];
+
+    @if (restudyMode()) {
+      <div class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-2xl p-3 mb-5 flex items-center justify-center gap-2 text-sm font-medium text-orange-700 dark:text-orange-300">
+        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+        </svg>
+        {{ 'studySession.restudyMode' | transloco }}
+      </div>
+    }
+
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6 mb-5">
+      <div class="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500 mb-1.5">
+        <span>{{ 'studySession.cardOf' | transloco: { current: currentIndex() + 1, total: cards().length } }}</span>
+        <span>{{ Math.round(((currentIndex() + 1) / cards().length) * 100) }}%</span>
+      </div>
+      <div class="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+        <div class="h-full bg-emerald-500 rounded-full transition-all duration-500" [style.width.%]="Math.round(((currentIndex() + 1) / cards().length) * 100)"></div>
+      </div>
+    </div>
+
+    <div class="perspective-[1000px] mb-5" (click)="!flipped() ? flipCard() : null">
+      <div class="relative transition-transform duration-500 [transform-style:preserve-3d] min-h-[300px] cursor-pointer"
+           [style.transform]="flipped() ? 'rotateY(180deg)' : 'rotateY(0deg)'">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-8 [backface-visibility:hidden] absolute inset-0 flex flex-col items-center justify-center">
+          <span class="text-xs font-semibold tracking-wider text-gray-400 dark:text-gray-500 uppercase mb-4">{{ 'studySession.question' | transloco }}</span>
+          <p class="text-xl font-medium text-gray-900 dark:text-gray-100 text-center leading-relaxed max-w-[500px] m-0">{{ card.question }}</p>
+          @if (!flipped()) {
+            <div class="mt-8 flex items-center gap-2 text-sm text-gray-400 dark:text-gray-500">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              {{ 'studySession.clickToReveal' | transloco }}
+            </div>
+          }
+        </div>
+        <div class="bg-white dark:bg-gray-800 border-2 border-emerald-200 dark:border-emerald-700 rounded-2xl p-8 [backface-visibility:hidden] [transform:rotateY(180deg)] absolute inset-0 flex flex-col items-center justify-center">
+          <span class="text-xs font-semibold tracking-wider text-emerald-500 uppercase mb-4">{{ 'studySession.answer' | transloco }}</span>
+          <p class="text-xl font-medium text-gray-900 dark:text-gray-100 text-center leading-relaxed max-w-[500px] m-0">{{ card.answer }}</p>
+          @if (card.document.title) {
+            <p class="mt-6 text-xs text-gray-400 dark:text-gray-500">{{ 'studySession.fromDocument' | transloco: { title: card.document.title } }}</p>
+          }
+        </div>
+      </div>
+    </div>
+
+    @if (flipped()) {
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+        <p class="text-sm font-semibold text-gray-700 dark:text-gray-300 text-center m-0 mb-4">{{ 'studySession.howWellRemember' | transloco }}</p>
+        <div class="grid grid-cols-5 gap-2 sm:gap-3">
+          <button (click)="rateCard(1)" class="flex flex-col items-center gap-1 px-1 sm:px-2 py-3 rounded-xl border-2 border-transparent cursor-pointer transition-all text-center hover:border-red-300 dark:hover:border-red-600">
+            <span class="text-xl sm:text-2xl leading-none">😓</span>
+            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">1</span>
+            <span class="hidden sm:inline text-[11px] text-gray-400 dark:text-gray-500">{{ 'studySession.rateBlackoutDesc' | transloco }}</span>
+          </button>
+          <button (click)="rateCard(2)" class="flex flex-col items-center gap-1 px-1 sm:px-2 py-3 rounded-xl border-2 border-transparent cursor-pointer transition-all text-center hover:border-orange-300 dark:hover:border-orange-600">
+            <span class="text-xl sm:text-2xl leading-none">😓</span>
+            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">2</span>
+            <span class="hidden sm:inline text-[11px] text-gray-400 dark:text-gray-500">{{ 'studySession.rateHardDesc' | transloco }}</span>
+          </button>
+          <button (click)="rateCard(3)" class="flex flex-col items-center gap-1 px-1 sm:px-2 py-3 rounded-xl border-2 border-transparent cursor-pointer transition-all text-center hover:border-yellow-300 dark:hover:border-yellow-600">
+            <span class="text-xl sm:text-2xl leading-none">😐</span>
+            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">3</span>
+            <span class="hidden sm:inline text-[11px] text-gray-400 dark:text-gray-500">{{ 'studySession.rateOkayDesc' | transloco }}</span>
+          </button>
+          <button (click)="rateCard(4)" class="flex flex-col items-center gap-1 px-1 sm:px-2 py-3 rounded-xl border-2 border-transparent cursor-pointer transition-all text-center hover:border-blue-300 dark:hover:border-blue-600">
+            <span class="text-xl sm:text-2xl leading-none">😊</span>
+            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">4</span>
+            <span class="hidden sm:inline text-[11px] text-gray-400 dark:text-gray-500">{{ 'studySession.rateGoodDesc' | transloco }}</span>
+          </button>
+          <button (click)="rateCard(5)" class="flex flex-col items-center gap-1 px-1 sm:px-2 py-3 rounded-xl border-2 border-transparent cursor-pointer transition-all text-center hover:border-emerald-300 dark:hover:border-emerald-600">
+            <span class="text-xl sm:text-2xl leading-none">🎯</span>
+            <span class="text-sm font-semibold text-gray-800 dark:text-gray-200">5</span>
+            <span class="hidden sm:inline text-[11px] text-gray-400 dark:text-gray-500">{{ 'studySession.ratePerfectDesc' | transloco }}</span>
+          </button>
+        </div>
+      </div>
+    }
+  }
+
+  @if (sessionEnded(); as ended) {
+    @if (summary(); as s) {
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-10 text-center">
+        <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <svg class="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 m-0 mb-1">{{ 'studySession.sessionComplete' | transloco }}</h2>
+        <p class="text-sm text-gray-500 dark:text-gray-400 m-0 mb-8">{{ 'studySession.sessionCompleteDesc' | transloco }}</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 m-0 mb-1">{{ s.totalCards }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 m-0">{{ 'studySession.cardsReviewed' | transloco }}</p>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 m-0 mb-1">{{ s.avgQuality }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 m-0">{{ 'studySession.avgQuality' | transloco }}</p>
+          </div>
+          <div class="bg-gray-50 dark:bg-gray-700 rounded-xl p-4">
+            <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 m-0 mb-1">{{ formatTime(s.totalTime) }}</p>
+            <p class="text-xs text-gray-500 dark:text-gray-400 m-0">{{ 'studySession.timeSpent' | transloco }}</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-center gap-4 sm:gap-6 mb-8 flex-wrap">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 bg-emerald-400 rounded-full"></span>
+            <span class="text-sm text-gray-600 dark:text-gray-300">{{ s.perfectCount }} {{ 'studySession.perfect' | transloco }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
+            <span class="text-sm text-gray-600 dark:text-gray-300">{{ s.goodCount }} {{ 'studySession.okay' | transloco }}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 bg-red-400 rounded-full"></span>
+            <span class="text-sm text-gray-600 dark:text-gray-300">{{ s.badCount }} {{ 'studySession.hard' | transloco }}</span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-center gap-3 flex-wrap">
+          <button (click)="restart()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-500 text-white text-sm font-semibold rounded-lg border-none cursor-pointer hover:bg-emerald-600 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            {{ 'studySession.studyAgain' | transloco }}
+          </button>
+          @if (difficultCards.length > 0) {
+            <button (click)="startRestudy()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500 text-white text-sm font-semibold rounded-lg border-none cursor-pointer hover:bg-orange-600 transition-colors">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+              {{ 'studySession.restudyCards' | transloco: { count: difficultCards.length } }}
+            </button>
+          }
+          <a routerLink="/dashboard" class="inline-flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-semibold rounded-lg border border-gray-200 dark:border-gray-600 no-underline hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors">
+            {{ 'studySession.backToDashboard' | transloco }}
+          </a>
+        </div>
+      </div>
+    }
+  }
+</div>

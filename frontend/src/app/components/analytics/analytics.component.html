@@ -1,0 +1,425 @@
+<div class="p-4 sm:p-7 max-w-6xl mx-auto">
+  <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100">
+    {{ 'analytics.title' | transloco }}
+  </h1>
+  <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+    {{ 'analytics.subtitle' | transloco }}
+  </p>
+
+  @if (loading()) {
+    <div class="flex items-center justify-center py-20">
+      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500"></div>
+    </div>
+  } @else if (error()) {
+    <div
+      class="mt-6 p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg text-sm"
+    >
+      {{ error() }}
+    </div>
+  } @else {
+    @if (data(); as d) {
+      <!-- Overview cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-6">
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700"
+        >
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+            {{ 'analytics.totalCards' | transloco }}
+          </p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+            {{ d.overview.totalCards }}
+          </p>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700"
+        >
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+            {{ 'analytics.totalDocuments' | transloco }}
+          </p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+            {{ d.overview.totalDocuments }}
+          </p>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700"
+        >
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+            {{ 'analytics.totalQuizzes' | transloco }}
+          </p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+            {{ d.overview.totalQuizzes }}
+          </p>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700"
+        >
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+            {{ 'analytics.totalExams' | transloco }}
+          </p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+            {{ d.overview.totalExams }}
+          </p>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700"
+        >
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+            {{ 'analytics.totalReviews' | transloco }}
+          </p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+            {{ d.overview.totalReviews }}
+          </p>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700"
+        >
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+            {{ 'analytics.currentStreak' | transloco }}
+          </p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+            {{ d.overview.currentStreak }}
+            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{
+              'analytics.days' | transloco
+            }}</span>
+          </p>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700"
+        >
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+            {{ 'analytics.longestStreak' | transloco }}
+          </p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+            {{ d.overview.longestStreak }}
+            <span class="text-sm font-normal text-gray-500 dark:text-gray-400">{{
+              'analytics.days' | transloco
+            }}</span>
+          </p>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700"
+        >
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+            {{ 'analytics.avgQuizScore' | transloco }}
+          </p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+            @if (d.overview.avgQuizScore != null) {
+              {{ d.overview.avgQuizScore }}%
+            } @else {
+              <span class="text-base font-normal text-gray-400">—</span>
+            }
+          </p>
+        </div>
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700"
+        >
+          <p class="text-xs font-medium text-gray-400 uppercase tracking-wide">
+            {{ 'analytics.avgExamScore' | transloco }}
+          </p>
+          <p class="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
+            @if (d.overview.avgExamScore != null) {
+              {{ d.overview.avgExamScore }}%
+            } @else {
+              <span class="text-base font-normal text-gray-400">—</span>
+            }
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+        <!-- Daily Activity (30-day bar chart) -->
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700"
+        >
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {{ 'analytics.dailyActivity' | transloco }}
+          </h3>
+          <div class="flex items-end gap-[2px] h-32" [style.--bar-count]="d.dailyActivity.length">
+            @for (day of d.dailyActivity; track day.date) {
+              @let maxVal = maxActivity(d.dailyActivity);
+              @let totalAct = day.reviews + day.quizzes + day.exams;
+              @let barH = maxVal > 0 ? (totalAct / maxVal) * 100 : 0;
+              <div class="flex-1 flex flex-col items-center justify-end h-full">
+                <div
+                  class="w-full rounded-t-sm transition-all duration-300"
+                  [style.height.%]="barH"
+                  [class.bg-emerald-400]="totalAct > 0"
+                  [class.bg-gray-100]="totalAct === 0"
+                  [class.dark:bg-gray-700]="totalAct === 0"
+                  [title]="day.date + ': ' + totalAct + ' activities'"
+                ></div>
+              </div>
+            }
+          </div>
+          <div class="flex justify-between text-[10px] text-gray-400 mt-1">
+            <span>{{ d.dailyActivity.at(0)?.date?.slice(5) }}</span>
+            <span>{{ d.dailyActivity.at(-1)?.date?.slice(5) }}</span>
+          </div>
+        </div>
+
+        <!-- Retention pie (simple stacked bar) -->
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700"
+        >
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {{ 'analytics.retention' | transloco }}
+          </h3>
+          @let ret = d.retention;
+          @let total = ret.mastered + ret.learning + ret.struggling + ret.new;
+          <div class="flex h-6 rounded-full overflow-hidden mb-4">
+            <div
+              [style.width.%]="total > 0 ? (ret.mastered / total) * 100 : 0"
+              class="bg-emerald-500 transition-all"
+              [title]="'Mastered: ' + ret.mastered"
+            ></div>
+            <div
+              [style.width.%]="total > 0 ? (ret.learning / total) * 100 : 0"
+              class="bg-amber-400 transition-all"
+              [title]="'Learning: ' + ret.learning"
+            ></div>
+            <div
+              [style.width.%]="total > 0 ? (ret.struggling / total) * 100 : 0"
+              class="bg-orange-500 transition-all"
+              [title]="'Struggling: ' + ret.struggling"
+            ></div>
+            <div
+              [style.width.%]="total > 0 ? (ret.new / total) * 100 : 0"
+              class="bg-gray-300 dark:bg-gray-600 transition-all"
+              [title]="'New: ' + ret.new"
+            ></div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm bg-emerald-500"></span>
+              <span class="text-gray-600 dark:text-gray-400"
+                >{{ 'analytics.mastered' | transloco }} ({{ ret.mastered }})</span
+              >
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm bg-amber-400"></span>
+              <span class="text-gray-600 dark:text-gray-400"
+                >{{ 'analytics.learning' | transloco }} ({{ ret.learning }})</span
+              >
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm bg-orange-500"></span>
+              <span class="text-gray-600 dark:text-gray-400"
+                >{{ 'analytics.struggling' | transloco }} ({{ ret.struggling }})</span
+              >
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="w-3 h-3 rounded-sm bg-gray-300 dark:bg-gray-600"></span>
+              <span class="text-gray-600 dark:text-gray-400"
+                >{{ 'analytics.new' | transloco }} ({{ ret.new }})</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Quiz score trend -->
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700"
+        >
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {{ 'analytics.quizTrend' | transloco }}
+          </h3>
+          @if (d.quizScores.length === 0) {
+            <p class="text-sm text-gray-400 py-6 text-center">
+              {{ 'analytics.noQuizData' | transloco }}
+            </p>
+          } @else {
+            @let maxS = 100;
+            @let pts = d.quizScores;
+            <svg viewBox="0 0 300 120" class="w-full h-32" preserveAspectRatio="none">
+              <polyline
+                [attr.points]="
+                  pts
+                    .map(
+                      (p, i) =>
+                        (i / (pts.length - 1 || 1)) * 300 + ',' + (120 - (p.score / maxS) * 100)
+                    )
+                    .join(' ')
+                "
+                fill="none"
+                stroke="#10b981"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              @for (p of pts; track $index; let i = $index) {
+                <circle
+                  [attr.cx]="(i / (pts.length - 1 || 1)) * 300"
+                  [attr.cy]="120 - (p.score / maxS) * 100"
+                  r="3"
+                  fill="#10b981"
+                >
+                  <title>{{ p.title }}: {{ p.score }}%</title>
+                </circle>
+              }
+            </svg>
+          }
+        </div>
+
+        <!-- Exam score trend -->
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700"
+        >
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {{ 'analytics.examTrend' | transloco }}
+          </h3>
+          @if (d.examScores.length === 0) {
+            <p class="text-sm text-gray-400 py-6 text-center">
+              {{ 'analytics.noExamData' | transloco }}
+            </p>
+          } @else {
+            @let maxS = 100;
+            @let pts = d.examScores;
+            <svg viewBox="0 0 300 120" class="w-full h-32" preserveAspectRatio="none">
+              <polyline
+                [attr.points]="
+                  pts
+                    .map(
+                      (p, i) =>
+                        (i / (pts.length - 1 || 1)) * 300 + ',' + (120 - (p.score / maxS) * 100)
+                    )
+                    .join(' ')
+                "
+                fill="none"
+                stroke="#f59e0b"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              @for (p of pts; track $index; let i = $index) {
+                <circle
+                  [attr.cx]="(i / (pts.length - 1 || 1)) * 300"
+                  [attr.cy]="120 - (p.score / maxS) * 100"
+                  r="3"
+                  fill="#f59e0b"
+                >
+                  <title>{{ p.title }}: {{ p.score }}%</title>
+                </circle>
+              }
+            </svg>
+          }
+        </div>
+
+        <!-- Quality distribution -->
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700"
+        >
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {{ 'analytics.qualityDistribution' | transloco }}
+          </h3>
+          <div class="flex items-end gap-3 h-28">
+            @for (q of d.qualityBuckets; track $index; let i = $index) {
+              <div class="flex-1 h-full flex flex-col items-center gap-1">
+                <div
+                  class="w-full rounded-t-sm transition-all"
+                  [style.height.%]="barHeight(q, d.qualityBuckets)"
+                  [style.minHeight.px]="q > 0 ? 6 : 0"
+                  [class.bg-red-400]="i < 1"
+                  [class.bg-orange-400]="i === 1"
+                  [class.bg-amber-400]="i === 2"
+                  [class.bg-lime-400]="i === 3"
+                  [class.bg-emerald-400]="i === 4"
+                  [class.bg-gray-100]="q === 0"
+                  [class.dark:bg-gray-700]="q === 0"
+                  [title]="q"
+                ></div>
+                <span class="text-[10px] text-gray-400">{{ i + 1 }}</span>
+              </div>
+            }
+          </div>
+          <div class="text-center text-xs text-gray-400 mt-1">
+            {{ 'analytics.qualityScale' | transloco }}
+          </div>
+        </div>
+
+        <!-- Document performance -->
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700 lg:col-span-2"
+        >
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {{ 'analytics.documentPerformance' | transloco }}
+          </h3>
+          @if (d.documentPerformance.length === 0) {
+            <p class="text-sm text-gray-400 py-6 text-center">
+              {{ 'analytics.noDocData' | transloco }}
+            </p>
+          } @else {
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-left text-xs text-gray-400 uppercase">
+                    <th class="pb-2 font-medium">{{ 'analytics.docTitle' | transloco }}</th>
+                    <th class="pb-2 font-medium px-3">{{ 'analytics.docAvgScore' | transloco }}</th>
+                    <th class="pb-2 font-medium px-3">{{ 'analytics.docQuizzes' | transloco }}</th>
+                    <th class="pb-2 font-medium px-3">{{ 'analytics.docCards' | transloco }}</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+                  @for (doc of d.documentPerformance; track $index) {
+                    <tr class="text-gray-700 dark:text-gray-300">
+                      <td class="py-2.5 font-medium truncate max-w-[200px]">{{ doc.title }}</td>
+                      <td class="py-2.5 px-3">
+                        @if (doc.avgScore != null) {
+                          <span
+                            [class.text-emerald-500]="doc.avgScore >= 70"
+                            [class.text-amber-500]="doc.avgScore >= 40 && doc.avgScore < 70"
+                            [class.text-red-500]="doc.avgScore < 40"
+                          >
+                            {{ doc.avgScore }}%
+                          </span>
+                        } @else {
+                          <span class="text-gray-400">—</span>
+                        }
+                      </td>
+                      <td class="py-2.5 px-3">{{ doc.quizCount }}</td>
+                      <td class="py-2.5 px-3">{{ doc.flashcardCount }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+
+        <!-- Heatmap -->
+        <div
+          class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700 lg:col-span-2"
+        >
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
+            {{ 'analytics.heatmap' | transloco }}
+          </h3>
+          @let hm = d.heatmap;
+          @let maxH = maxActivity(hm);
+          <div class="flex flex-wrap gap-[3px]">
+            @for (cell of hm; track cell.date) {
+              @let intensity = maxH > 0 ? cell.count / maxH : 0;
+              <div
+                class="w-3 h-3 rounded-sm transition-colors cursor-default"
+                [class.bg-emerald-100]="intensity > 0 && intensity <= 0.25"
+                [class.bg-emerald-300]="intensity > 0.25 && intensity <= 0.5"
+                [class.bg-emerald-500]="intensity > 0.5 && intensity <= 0.75"
+                [class.bg-emerald-700]="intensity > 0.75"
+                [class.bg-gray-100]="intensity === 0"
+                [class.dark:bg-gray-700]="intensity === 0"
+                [title]="cell.date + ': ' + cell.count + ' activities'"
+              ></div>
+            }
+          </div>
+          <div class="flex items-center gap-2 mt-2 text-[10px] text-gray-400">
+            <span>{{ 'analytics.less' | transloco }}</span>
+            <div class="w-3 h-3 rounded-sm bg-gray-100 dark:bg-gray-700"></div>
+            <div class="w-3 h-3 rounded-sm bg-emerald-100"></div>
+            <div class="w-3 h-3 rounded-sm bg-emerald-300"></div>
+            <div class="w-3 h-3 rounded-sm bg-emerald-500"></div>
+            <div class="w-3 h-3 rounded-sm bg-emerald-700"></div>
+            <span>{{ 'analytics.more' | transloco }}</span>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>

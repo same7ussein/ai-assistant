@@ -1,0 +1,162 @@
+<div class="max-w-[1100px] mx-auto px-4 sm:px-10 py-8 pb-[60px]">
+  <div class="mb-7 flex items-start justify-between gap-4 flex-wrap">
+    <div>
+      <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 m-0 mb-1.5">{{ 'roadmap.title' | transloco }}</h1>
+      <p class="text-sm text-gray-500 dark:text-gray-400 m-0">{{ 'roadmap.subtitle' | transloco }}</p>
+    </div>
+    @if (!loading() && roadmap()) {
+      <button (click)="generate()" [disabled]="generating()"
+        class="flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white text-sm font-semibold rounded-lg border-none cursor-pointer hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+        @if (generating()) {
+          <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+          <span>{{ 'roadmap.generating' | transloco }}</span>
+        } @else {
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>{{ 'roadmap.regenerate' | transloco }}</span>
+        }
+      </button>
+    }
+  </div>
+
+  @if (loading() || generating()) {
+    <div class="py-20 text-center">
+      <div class="w-12 h-12 border-4 border-emerald-100 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
+      <p class="text-sm font-medium text-gray-500 dark:text-gray-400 m-0">
+        {{ generating() ? ('roadmap.generatingMsg' | transloco) : ('roadmap.loading' | transloco) }}
+      </p>
+    </div>
+  } @else if (error()) {
+    <div class="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-700 rounded-2xl p-6 text-center">
+      <p class="text-red-600 dark:text-red-400 text-sm font-medium m-0 mb-3">{{ error() | transloco }}</p>
+      <button (click)="generate()"
+        class="px-4 py-2 bg-red-500 text-white text-sm font-semibold rounded-lg border-none cursor-pointer hover:bg-red-600 transition-colors">
+        {{ 'roadmap.tryAgain' | transloco }}
+      </button>
+    </div>
+  } @else if (!roadmap()) {
+    <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-10 text-center">
+      <div class="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+      </div>
+      <h2 class="text-lg font-bold text-gray-900 dark:text-gray-100 m-0 mb-2">{{ 'roadmap.emptyTitle' | transloco }}</h2>
+      <p class="text-sm text-gray-500 dark:text-gray-400 m-0 mb-5">{{ 'roadmap.emptyDesc' | transloco }}</p>
+      <button (click)="generate()"
+        class="px-6 py-2.5 bg-emerald-500 text-white text-sm font-semibold rounded-lg border-none cursor-pointer hover:bg-emerald-600 transition-colors">
+        {{ 'roadmap.generateBtn' | transloco }}
+      </button>
+    </div>
+  } @else {
+    <div class="mb-6">
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+        <div class="flex items-start gap-4 mb-4">
+          <div class="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <svg class="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100 m-0 mb-1">{{ roadmap()!.title }}</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 m-0">{{ roadmap()!.summary }}</p>
+          </div>
+        </div>
+
+        @if (roadmap()!.strengths.length > 0 || roadmap()!.weakAreas.length > 0) {
+          <div class="flex flex-col sm:flex-row gap-4 mb-4">
+            @if (roadmap()!.strengths.length > 0) {
+              <div class="flex-1 bg-emerald-50 dark:bg-emerald-900/30 rounded-xl p-4">
+                <p class="text-xs font-semibold tracking-wider text-emerald-600 dark:text-emerald-400 m-0 mb-2">{{ 'roadmap.strengths' | transloco }}</p>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (s of roadmap()!.strengths; track s) {
+                    <span class="text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-800/50 px-2.5 py-1 rounded-full">{{ s }}</span>
+                  }
+                </div>
+              </div>
+            }
+            @if (roadmap()!.weakAreas.length > 0) {
+              <div class="flex-1 bg-red-50 dark:bg-red-900/30 rounded-xl p-4">
+                <p class="text-xs font-semibold tracking-wider text-red-600 dark:text-red-400 m-0 mb-2">{{ 'roadmap.weakAreas' | transloco }}</p>
+                <div class="flex flex-wrap gap-1.5">
+                  @for (w of roadmap()!.weakAreas; track w) {
+                    <span class="text-xs font-medium text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-800/50 px-2.5 py-1 rounded-full">{{ w }}</span>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (roadmap()!.generatedAt) {
+          <p class="text-xs text-gray-400 dark:text-gray-500 m-0">
+            {{ 'roadmap.generated' | transloco }} {{ roadmap()!.generatedAt | date:'medium' }}
+          </p>
+        }
+      </div>
+    </div>
+
+    @if (roadmap()!.recommendedNextSteps.length > 0) {
+      <div class="mb-6">
+        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-2xl p-6">
+          <h3 class="text-sm font-bold text-white m-0 mb-3 flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            {{ 'roadmap.nextSteps' | transloco }}
+          </h3>
+          <ul class="m-0 p-0 list-none space-y-2">
+            @for (step of roadmap()!.recommendedNextSteps; track step) {
+              <li class="flex items-start gap-3 text-sm text-white">
+                <span class="mt-0.5 w-1.5 h-1.5 bg-white/60 rounded-full flex-shrink-0"></span>
+                <span>{{ step }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+      </div>
+    }
+
+    <div class="space-y-4">
+      <h3 class="text-base font-bold text-gray-900 dark:text-gray-100 m-0 flex items-center gap-2">
+        <svg class="w-5 h-5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+        </svg>
+        {{ 'roadmap.milestones' | transloco }}
+      </h3>
+
+      <div class="relative">
+        <div class="absolute left-6 top-0 bottom-0 w-0.5 bg-gray-200 dark:bg-gray-700"></div>
+
+        @for (m of roadmap()!.milestones; track m.title; let i = $index) {
+          <div class="relative flex items-start gap-4 pb-6 last:pb-0">
+            <div class="relative z-10 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 text-lg"
+              [class.bg-emerald-100]="m.priority === 'high'"
+              [class.bg-amber-100]="m.priority === 'medium'"
+              [class.bg-gray-100]="m.priority === 'low'">
+              {{ getTypeIcon(m.type) | transloco }}
+            </div>
+            <div class="flex-1 min-w-0 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+              <div class="flex items-start justify-between gap-2 mb-1.5">
+                <h4 class="text-sm font-bold text-gray-900 dark:text-gray-100 m-0">{{ m.title }}</h4>
+                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 {{ getPriorityClass(m.priority) }}">
+                  {{ 'roadmap.priority' + (m.priority | titlecase) | transloco }}
+                </span>
+              </div>
+              <p class="text-sm text-gray-500 dark:text-gray-400 m-0 mb-2">{{ m.description }}</p>
+              @if (m.estimatedTime) {
+                <div class="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>{{ m.estimatedTime }}</span>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

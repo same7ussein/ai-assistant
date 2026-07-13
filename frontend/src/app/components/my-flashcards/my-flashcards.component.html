@@ -1,0 +1,53 @@
+<div class="max-w-5xl mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
+    <h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 m-0">{{ 'flashcards.title' | transloco }}</h1>
+    <div class="flex items-center gap-2">
+      <input
+        type="number"
+        [(ngModel)]="genCount"
+        min="1"
+        max="20"
+        [placeholder]="'flashcards.cardsPlaceholder' | transloco"
+        class="w-20 px-2 py-1.5 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500"
+      />
+      <button
+        class="bg-emerald-600 text-white text-sm px-3 py-1.5 rounded disabled:opacity-50 hover:bg-emerald-700 transition-colors"
+        (click)="generate()"
+        [disabled]="generating()"
+      >
+        {{ generating() ? ('flashcards.generating' | transloco) : ('flashcards.generate' | transloco) }}
+      </button>
+    </div>
+  </div>
+  @if (error()) {
+    <div class="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-4 py-2 rounded text-sm mb-4">{{ error() | transloco }}</div>
+  }
+
+  @if (loadingCards()) {
+    <div class="flex items-center justify-center py-16">
+      <div class="w-10 h-10 border-4 border-emerald-100 border-t-emerald-500 rounded-full animate-spin"></div>
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (card of cards(); track card._id) {
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-black/20 border border-gray-100 dark:border-gray-700 min-h-[180px] relative cursor-pointer" (click)="toggleFlip(card._id)">
+          @if (!flippedIds().has(card._id)) {
+            <div class="p-5 flex items-center justify-center h-full">
+              <p class="text-center text-gray-900 dark:text-gray-100 font-medium text-sm leading-relaxed m-0">{{ card.question }}</p>
+            </div>
+          } @else {
+            <div class="p-5 flex items-center justify-center h-full bg-gray-50 dark:bg-gray-700 rounded-lg">
+              <p class="text-center text-gray-700 dark:text-gray-200 text-sm leading-relaxed m-0">{{ card.answer }}</p>
+            </div>
+          }
+          <button
+            class="absolute top-1.5 right-1.5 bg-red-600 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center border-none cursor-pointer"
+            (click)="deleteCard(card._id); $event.stopPropagation()"
+          >X</button>
+        </div>
+      } @empty {
+        <p class="text-gray-400 dark:text-gray-500 text-sm text-center col-span-full py-8">{{ 'flashcards.noFlashcards' | transloco }}</p>
+      }
+    </div>
+  }
+</div>
