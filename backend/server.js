@@ -92,6 +92,10 @@ app.use((err, req, res, next) => {
   res.status(500).json({ message: "Internal server error." });
 });
 
-app.listen(config.PORT, () => {
+const server = app.listen(config.PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${config.PORT}`);
+});
+
+server.on("error", (error) => {
+  console.error(`Server listen error: ${error.message}`);
 });
